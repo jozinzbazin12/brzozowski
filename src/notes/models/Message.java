@@ -14,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.security.sasl.AuthenticationException;
 
 @NamedQuery(name = "Message.all", query = "SELECT m FROM Message m")
 @Entity()
@@ -77,6 +78,21 @@ public class Message implements Serializable {
 
 	public void setEditors(Set<User> editors) {
 		this.editors = editors;
+	}
+
+	public void permissionsToModify(User u) throws AuthenticationException {
+		System.out.println(u);
+		System.out.println(editors);
+		System.out.println(editors.contains(u));
+		if (owner != u && !editors.contains(u)) {
+			throw new AuthenticationException("Brak uprawnieñ do edycji");
+		}
+	}
+
+	public void checkOwner(User u) throws AuthenticationException {
+		if (!owner.equals(u)) {
+			throw new AuthenticationException("U¿ytkownik nie jest w³aœcicielem wiadomoœci");
+		}
 	}
 
 }

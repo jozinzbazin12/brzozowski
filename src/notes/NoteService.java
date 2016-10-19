@@ -33,9 +33,9 @@ public class NoteService {
 
 	public NoteService() {
 		mapper.configure(Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.setVisibilityChecker(
-				mapper.getSerializationConfig().getDefaultVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.NONE)
-						.withGetterVisibility(JsonAutoDetect.Visibility.ANY).withSetterVisibility(JsonAutoDetect.Visibility.ANY));
+		mapper.setVisibilityChecker(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+				.withFieldVisibility(JsonAutoDetect.Visibility.NONE).withGetterVisibility(JsonAutoDetect.Visibility.ANY)
+				.withSetterVisibility(JsonAutoDetect.Visibility.ANY));
 	}
 
 	private boolean authorize(HttpServletRequest req) throws AuthenticationException {
@@ -71,40 +71,40 @@ public class NoteService {
 			@QueryParam("messageId") String id) throws AuthenticationException {
 		authorize(req);
 		Message m = PersistenceManager.getEm().find(Message.class, Integer.valueOf(id));
+		if (m == null) {
+			throw new IllegalArgumentException("Nieprawid³owe argumenty");
+		}
+		m.permissionsToModify(getCurrentUser(req));
 		m.setText(message);
 		PersistenceManager.save(m);
 	}
 
 	@Path("/addUser")
 	@GET
-	public void addUser(@Context HttpServletRequest req, @QueryParam("user") String user, @QueryParam("messageId") String id)
-			throws AuthenticationException {
+	public void addUser(@Context HttpServletRequest req, @QueryParam("user") String user,
+			@QueryParam("messageId") String id) throws AuthenticationException {
 		authorize(req);
 		User u = PersistenceManager.getEm().find(User.class, user);
 		Message m = PersistenceManager.getEm().find(Message.class, Integer.valueOf(id));
-		if (u == null || m == null) {
+		if (m == null) {
 			throw new IllegalArgumentException("Nieprawid³owe argumenty");
 		}
-		if (m.getEditors().contains(u)) {
-			throw new IllegalArgumentException("U¿ytkownik ju¿ jest edytorem!");
-		}
+		m.checkOwner(getCurrentUser(req));
 		m.getEditors().add(u);
 		PersistenceManager.save(m);
 	}
 
 	@Path("/removeUser")
 	@GET
-	public void removeUser(@Context HttpServletRequest req, @QueryParam("user") String user, @QueryParam("messageId") String id)
-			throws AuthenticationException {
+	public void removeUser(@Context HttpServletRequest req, @QueryParam("user") String user,
+			@QueryParam("messageId") String id) throws AuthenticationException {
 		authorize(req);
 		User u = PersistenceManager.getEm().find(User.class, user);
 		Message m = PersistenceManager.getEm().find(Message.class, Integer.valueOf(id));
-		if (u == null || m == null) {
+		if (m == null) {
 			throw new IllegalArgumentException("Nieprawid³owe argumenty");
 		}
-		if (!m.getEditors().contains(u)) {
-			throw new IllegalArgumentException("U¿ytkownik nie jest edytorem!");
-		}
+		m.checkOwner(getCurrentUser(req));
 		m.getEditors().remove(u);
 		PersistenceManager.save(m);
 	}
@@ -118,23 +118,22 @@ public class NoteService {
 		if (m == null) {
 			throw new IllegalArgumentException("Nie znaleziono wiadomoœci o id " + messageId);
 		}
-		if (m.getOwner().equals(getCurrentUser(req))) {
-			PersistenceManager.delete(m);
-		} else {
-			throw new AuthenticationException("Nie mo¿na usun¹æ cudzej wiadomoœci");
-		}
+		m.checkOwner(getCurrentUser(req));
+		PersistenceManager.delete(m);
 	}
 
 	@Path("/getUsers")
 	@GET
-	public String getUsers(@Context HttpServletRequest req) throws JsonGenerationException, JsonMappingException, IOException {
+	public String getUsers(@Context HttpServletRequest req)
+			throws JsonGenerationException, JsonMappingException, IOException {
 		TypedQuery<User> query = em.createNamedQuery("User.all", User.class);
 		return mapper.writeValueAsString(query.getResultList());
 	}
 
 	@Path("/getUser")
 	@GET
-	public String getUser(@Context HttpServletRequest req) throws JsonGenerationException, JsonMappingException, IOException {
+	public String getUser(@Context HttpServletRequest req)
+			throws JsonGenerationException, JsonMappingException, IOException {
 		User u = getCurrentUser(req);
 		return mapper.writeValueAsString(u);
 	}
@@ -195,5 +194,4 @@ public class NoteService {
 	private User getCurrentUser(HttpServletRequest req) {
 		return (User) req.getSession().getAttribute(USER);
 	}
-
 }

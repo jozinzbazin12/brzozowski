@@ -100,6 +100,16 @@ public class User implements Serializable {
 			return false;
 		}
 		User u = (User) obj;
-		return u.login.equals(login) && u.password.equals(password);
+		return u.login.equals(login);
+	}
+
+	@Override
+	public int hashCode() {
+		return login.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return login + ", " + name;
 	}
 }
