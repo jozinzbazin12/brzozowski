@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<div class="modal-header">
+	<h1>Uprawnienia</h1>
+	<div class="modal-body">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Użytkownik</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="user in users track by user.login">
+					<td>{{user.name}}</td>
+					<td>
+						<button ng-hide="hasPermissions(user)" class="btn btn-small btn-success" ng-click="add(user);">Dodaj</button>
+						<button ng-show="hasPermissions(user)" class="btn btn-small btn-danger" ng-click="remove(user);">Usuń</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html ng-app="app" ng-controller="controller" ng-init="init()">
+<head>
+<meta charset="UTF-8">
+<script src="js/lib/angular.js"></script>
+<script src="js/lib/jquery.js"></script>
+<script src="js/lib/ui-bootstrap-tpls-0.13.0.min.js"></script>
+<link rel="stylesheet" href="css/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="css/custom.css">
+
+<script src="css/bootstrap/js/bootstrap.min.js"></script>
+
+<script src="js/app.js"></script>
+<script src="js/directives.js"></script>
+<script src="js/controller.js"></script>
+<script src="js/registerController.js"></script>
+<script src="js/notesController.js"></script>
+<script src="js/permissionsController.js"></script>
+
+
+<title>Notatki</title>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="#" class="navbar-brand">Serwis notatkowy</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<form>
+					<ul class="nav navbar-nav navbar-right">
+						<li ng-show="!logged"><input class="form-control navbar-text" placeholder="Login" ng-model="user.login" /></li>
+						<li ng-show="!logged"><input class="form-control navbar-text" placeholder="Hasło" ng-model="user.password" type="password" /></li>
+						<li ng-show="!logged"><button ng-click="login()" class="btn btn-medium btn-warning navbar-text">Zaloguj</button></li>
+						<li ng-show="!logged"><button ng-click="register()" class="btn btn-medium btn-warning navbar-text">Zarejestruj się</button></li>
+
+						<!--  -->
+						<li ng-show="logged"><span class="navbar-text">Siema {{user.name}}</span></li>
+						<li ng-show="logged"><button ng-click="logout()" class="btn btn-medium btn-warning navbar-text">Wyloguj</button></li>
+					</ul>
+				</form>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</nav>
+	<div ng-controller="notesController">
+		<div ng-show="$parent.logged" class="container">
+			<h3>Nowa notatka</h3>
+			<form class="form-inline">
+				<div class="form-group">
+					<label for="message">Notatka</label>
+					<textarea ng-model="message" class="form-control" id="message"></textarea>
+				</div>
+				<button class="btn btn-small btn-primary" ng-click="newMessage()">Dodaj</button>
+			</form>
+		</div>
+		<div class="container">
+			<h1>Notatki</h1>
+			<div class="modal-body">
+				<form name="form">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Użytkownik</th>
+								<th>Wiadomość</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="note in messages track by note.messageId">
+								<td>{{note.owner.name}}</td>
+								<td><span ng-show="!note.edit">{{note.text}}</span> <span ng-show="note.edit">
+										<textarea ng-model="note.text"></textarea>
+									</span></td>
+								<td>
+									<button ng-show="isEditor(note) && !note.edit" class="btn btn-small btn-primary" ng-click="editMessage(note);">Edytuj</button>
+									<button ng-show="isEditor(note) && note.edit" class="btn btn-small btn-primary" ng-click="saveMessage(note);">Zapisz</button>
+									<button ng-show="note.edit" class="btn btn-small btn-primary" ng-click="cancel(note)">Anuluj</button>
+									<button ng-show="note.owner.login===$parent.loggedUser.login" class="btn btn-small btn-danger"
+										ng-click="deleteMessage(note, $index);">Usuń</button>
+									<button ng-show="note.owner.login===$parent.loggedUser.login" class="btn btn-small btn-info" ng-click="permissions(note);">Uprawnienia</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

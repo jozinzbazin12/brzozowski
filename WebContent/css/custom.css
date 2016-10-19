@@ -1,0 +1,8 @@
+.ng-invalid.ng-dirty {
+	border-width: 3px;
+	border-color: red;
+}
+
+.navbar-collapse li {
+	padding-left: 20px;
+}
